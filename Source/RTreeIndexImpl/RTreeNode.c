@@ -1,25 +1,17 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "assert.h"
-#include "RTreeIndexImpl.h"
-#include "RTreeCard.h"
+#include "include/RTreeIndexImpl.h"
+#include "include/RTreeCard.h"
 
-
-// Initialize one branch cell in a node.
-//
-static void RTreeInitBranch(RTreeBranch *b)
-{
+/// Initialize one branch cell in a node.
+static void RTreeInitBranch(RTreeBranch *b) {
 	RTreeInitRect(&(b->rect));
 	b->child = NULL;
 }
 
-
-
-// Initialize a RTreeNode structure.
-//
-void RTreeInitNode(RTreeNode *N)
-{
+/// Initialize a RTreeNode structure.
+void RTreeInitNode(RTreeNode *N) {
 	register RTreeNode *n = N;
 	register int i;
 	n->count = 0;
@@ -28,12 +20,8 @@ void RTreeInitNode(RTreeNode *N)
 		RTreeInitBranch(&(n->branch[i]));
 }
 
-
-
-// Make a new node and initialize to have all branch cells empty.
-//
-RTreeNode * RTreeNewNode()
-{
+/// Make a new node and initialize to have all branch cells empty.
+RTreeNode * RTreeNewNode() {
 	register RTreeNode *n;
 
 	//n = new RTreeNode;
@@ -43,69 +31,15 @@ RTreeNode * RTreeNewNode()
 	return n;
 }
 
-
-void RTreeFreeNode(RTreeNode *p)
-{
+void RTreeFreeNode(RTreeNode *p) {
 	assert(p);
 	//delete p;
 	free(p);
 }
 
-
-
-static void RTreePrintBranch(RTreeBranch *b, int depth)
-{
-	RTreePrintRect(&(b->rect), depth);
-	RTreePrintNode(b->child, depth);
-}
-
-
-extern void RTreeTabIn(int depth)
-{
-	int i;
-	for(i=0; i<depth; i++)
-		putchar('\t');
-}
-
-
-// Print out the data in a node.
-//
-void RTreePrintNode(RTreeNode *n, int depth)
-{
-	int i;
-	assert(n);
-
-	RTreeTabIn(depth);
-	printf("node");
-	if (n->level == 0)
-		printf(" LEAF");
-	else if (n->level > 0)
-		printf(" NONLEAF");
-	else
-		printf(" TYPE=?");
-	printf("  level=%d  count=%d  address=%o\n", n->level, n->count, n);
-
-	for (i=0; i<n->count; i++)
-	{
-		if(n->level == 0) {
-			// RTreeTabIn(depth);
-			// printf("\t%d: data = %d\n", i, n->branch[i].child);
-		}
-		else {
-			RTreeTabIn(depth);
-			printf("branch %d\n", i);
-			RTreePrintBranch(&n->branch[i], depth+1);
-		}
-	}
-}
-
-
-
-// Find the smallest rectangle that includes all rectangles in
-// branches of a node.
-//
-RTreeRect RTreeNodeCover(RTreeNode *N)
-{
+/// Find the smallest rectangle that includes all rectangles in
+/// branches of a node.
+RTreeRect RTreeNodeCover(RTreeNode *N) {
 	register RTreeNode *n = N;
 	register int i, first_time=1;
 	RTreeRect r;
@@ -126,16 +60,12 @@ RTreeRect RTreeNodeCover(RTreeNode *N)
 	return r;
 }
 
-
-
-// Pick a branch.  Pick the one that will need the smallest increase
-// in area to accomodate the new rectangle.  This will result in the
-// least total area for the covering rectangles in the current node.
-// In case of a tie, pick the one which was smaller before, to get
-// the best resolution when searching.
-//
-int RTreePickBranch(RTreeRect *R, RTreeNode *N)
-{
+/// Pick a branch.  Pick the one that will need the smallest increase
+/// in area to accomodate the new rectangle.  This will result in the
+/// least total area for the covering rectangles in the current node.
+/// In case of a tie, pick the one which was smaller before, to get
+/// the best resolution when searching.
+int RTreePickBranch(RTreeRect *R, RTreeNode *N) {
 	register RTreeRect *r = R;
 	register RTreeNode *n = N;
 	register RTreeRect *rr;
@@ -171,15 +101,11 @@ int RTreePickBranch(RTreeRect *R, RTreeNode *N)
 	return best;
 }
 
-
-
-// Add a branch to a node.  Split the node if necessary.
-// Returns 0 if node not split.  Old node updated.
-// Returns 1 if node split, sets *new_node to address of new node.
-// Old node updated, becomes one of two.
-//
-int RTreeAddBranch(RTreeBranch *B, RTreeNode *N, RTreeNode **New_node)
-{
+/// Add a branch to a node.  Split the node if necessary.
+/// Returns 0 if node not split.  Old node updated.
+/// Returns 1 if node split, sets *new_node to address of new node.
+/// Old node updated, becomes one of two.
+int RTreeAddBranch(RTreeBranch *B, RTreeNode *N, RTreeNode **New_node) {
 	register RTreeBranch *b = B;
 	register RTreeNode *n = N;
 	register RTreeNode **new_node = New_node;
@@ -209,12 +135,8 @@ int RTreeAddBranch(RTreeBranch *B, RTreeNode *N, RTreeNode **New_node)
 	}
 }
 
-
-
-// Disconnect a dependent node.
-//
-void RTreeDisconnectBranch(RTreeNode *n, int i)
-{
+/// Disconnect a dependent node.
+void RTreeDisconnectBranch(RTreeNode *n, int i) {
 	assert(n && i>=0 && i<MAXKIDS(n));
 	assert(n->branch[i].child);
 

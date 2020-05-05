@@ -1,11 +1,10 @@
+#include "include/RTreeIndexImpl.h"
+#include "include/RTreeCard.h"
 
-#include "RTreeIndexImpl.h"
-#include "RTreeCard.h"
 int NODECARD = MAXCARD;
 int LEAFCARD = MAXCARD;
 
-static int set_max(int *which, int new_max)
-{
+static int set_max(int *which, int new_max) {
 	if(2 > new_max || new_max > MAXCARD)
 		return 0;
 	*which = new_max;

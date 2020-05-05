@@ -12,3 +12,8 @@ FOUNDATION_EXPORT double SwiftRTreeVersionNumber;
 
 //! Project version string for SwiftRTree.
 FOUNDATION_EXPORT const unsigned char SwiftRTreeVersionString[];
+
+#import "include/RTreeCard.h"
+#import "include/RTreeIndexImpl.h"
+#import "include/RTreeSplit_l.h"
+#import "include/RTreeSplit_q.h"

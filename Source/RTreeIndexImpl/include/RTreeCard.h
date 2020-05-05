@@ -1,4 +1,3 @@
-
 #ifndef __CARD__
 #define __CARD__
 
@@ -12,5 +11,4 @@ extern int LEAFCARD;
 
 #define MAXKIDS(n) ((n)->level > 0 ? NODECARD : LEAFCARD)
 #define MINFILL(n) ((n)->level > 0 ? MinNodeFill : MinLeafFill)
-
 #endif

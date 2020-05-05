@@ -1,26 +1,22 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "assert.h"
-#include "RTreeIndexImpl.h"
-#include "RTreeCard.h"
+#include "include/RTreeIndexImpl.h"
+#include "include/RTreeCard.h"
 
-// Make a new index, empty.  Consists of a single node.
-RTreeNode * RTreeNewIndex()
-{
+/// Make a new index, empty.  Consists of a single node.
+RTreeNode * RTreeNewIndex() {
 	RTreeNode *x;
 	x = RTreeNewNode();
 	x->level = 0; /* leaf */
 	return x;
 }
 
-////////////////////////////////////////////////////////////
-// Search in an index tree or subtree for all data retangles that overlap the argument rectangle.
-// Return the number of qualifying data rects.
-int RTreeSearch(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg)
-{
+/// Search in an index tree or subtree for all data retangles that overlap the argument rectangle.
+/// Return the number of qualifying data rects.
+int RTreeSearch(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg) {
 	register RTreeNode *n = N;
-	register RTreeRect *r = R; // NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
+	register RTreeRect *r = R; /// NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
 	register int i;
 	assert(n);
 	assert(n->level >= 0);
@@ -44,7 +40,7 @@ int RTreeSearch(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, voi
 			if (n->branch[i].child && RTreeOverlap(r, &n->branch[i].rect))
 			{
 				if(callback && !callback((int)n->branch[i].child, &n->branch[i].rect, cbarg))
-					return 0; // callback wants to terminate search early
+					return 0; /// callback wants to terminate search early
 			}
 		}
 	}
@@ -52,12 +48,10 @@ int RTreeSearch(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, voi
 	return 1;
 }
 
-////////////////////////////////////////////////////////////
-// Search in an index tree or subtree for all data retangles that contain the argument rectangle.
-int RTreeSearchContained(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg)
-{
+/// Search in an index tree or subtree for all data retangles that contain the argument rectangle.
+int RTreeSearchContained(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg) {
 	register RTreeNode *n = N;
-	register RTreeRect *r = R; // NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
+	register RTreeRect *r = R; /// NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
 	register int i;
 	assert(n);
 	assert(n->level >= 0);
@@ -81,7 +75,7 @@ int RTreeSearchContained(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback call
 			if (n->branch[i].child && RTreeContained(&n->branch[i].rect, r))
 			{
 				if(callback && !callback((int)n->branch[i].child, &n->branch[i].rect, cbarg))
-					return 0; // callback wants to terminate search early
+					return 0; /// callback wants to terminate search early
 			}
 		}
 	}
@@ -89,13 +83,11 @@ int RTreeSearchContained(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback call
 	return 1;
 }
 
-////////////////////////////////////////////////////////////
-// Search in an index tree or subtree for all data retangles that are contained within the argument rectangle.
-// Return the number of qualifying data rects.
-int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg)
-{
+/// Search in an index tree or subtree for all data retangles that are contained within the argument rectangle.
+/// Return the number of qualifying data rects.
+int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg) {
 	register RTreeNode *n = N;
-	register RTreeRect *r = R; // NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
+	register RTreeRect *r = R; /// NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
 	register int i;
 	assert(n);
 	assert(n->level >= 0);
@@ -119,7 +111,7 @@ int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback cal
 			if (n->branch[i].child && RTreeContained(r, &n->branch[i].rect))
 			{
 				if(callback && !callback((int)n->branch[i].child, &n->branch[i].rect, cbarg))
-					return 0; // callback wants to terminate search early
+					return 0; /// callback wants to terminate search early
 			}
 		}
 	}
@@ -127,13 +119,12 @@ int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback cal
 	return 1;
 }
 
-// Inserts a new data rectangle into the index structure.
-// Recursively descends tree, propagates splits back up.
-// Returns 0 if node was not split.  Old node updated.
-// If node was split, returns 1 and sets the pointer pointed to by new_node to point to the new node.  Old node updated to become one of two.
-// The level argument specifies the number of steps up from the leaf level to insert; e.g. a data rectangle goes in at level = 0.
-static int RTreeInsertRect2(RTreeRect *r, void *tid, RTreeNode *n, RTreeNode **new_node, int level)
-{
+/// Inserts a new data rectangle into the index structure.
+/// Recursively descends tree, propagates splits back up.
+/// Returns 0 if node was not split.  Old node updated.
+/// If node was split, returns 1 and sets the pointer pointed to by new_node to point to the new node.  Old node updated to become one of two.
+/// The level argument specifies the number of steps up from the leaf level to insert; e.g. a data rectangle goes in at level = 0.
+static int RTreeInsertRect2(RTreeRect *r, void *tid, RTreeNode *n, RTreeNode **new_node, int level) {
 /*
 	register RTreeRect *r = R;
 	register int tid = Tid;
@@ -148,19 +139,19 @@ static int RTreeInsertRect2(RTreeRect *r, void *tid, RTreeNode *n, RTreeNode **n
 	assert(r && n && new_node);
 	assert(level >= 0 && level <= n->level);
 
-	// Still above level for insertion, go down tree recursively
+	/// Still above level for insertion, go down tree recursively
 	//
 	if (n->level > level)
 	{
 		i = RTreePickBranch(r, n);
 		if (!RTreeInsertRect2(r, tid, n->branch[i].child, &n2, level))
 		{
-			// child was not split
+			/// child was not split
 			//
 			n->branch[i].rect = RTreeCombineRect(r, &(n->branch[i].rect));
 			return 0;
 		}
-		else    // child was split
+		else    /// child was split
 		{
 			n->branch[i].rect = RTreeNodeCover(n->branch[i].child);
 			b.child = n2;
@@ -169,7 +160,7 @@ static int RTreeInsertRect2(RTreeRect *r, void *tid, RTreeNode *n, RTreeNode **n
 		}
 	}
 
-	// Have reached level for insertion. Add rect, split if necessary
+	/// Have reached level for insertion. Add rect, split if necessary
 	//
 	else if (n->level == level)
 	{
@@ -186,13 +177,12 @@ static int RTreeInsertRect2(RTreeRect *r, void *tid, RTreeNode *n, RTreeNode **n
 	}
 }
 
-// Insert a data rectangle into an index structure.
-// RTreeInsertRect provides for splitting the root;
-// returns 1 if root was split, 0 if it was not.
-// The level argument specifies the number of steps up from the leaf level to insert; e.g. a data rectangle goes in at level = 0.
-// RTreeInsertRect2 does the recursion.
-int RTreeInsertRect(RTreeRect *R, void *Tid, RTreeNode **Root, int Level)
-{
+/// Insert a data rectangle into an index structure.
+/// RTreeInsertRect provides for splitting the root;
+/// returns 1 if root was split, 0 if it was not.
+/// The level argument specifies the number of steps up from the leaf level to insert; e.g. a data rectangle goes in at level = 0.
+/// RTreeInsertRect2 does the recursion.
+int RTreeInsertRect(RTreeRect *R, void *Tid, RTreeNode **Root, int Level) {
 	register RTreeRect *r = R;
 	register long tid = (int)Tid;
 	register RTreeNode **root = Root;
@@ -227,24 +217,21 @@ int RTreeInsertRect(RTreeRect *R, void *Tid, RTreeNode **Root, int Level)
 	return result;
 }
 
-// Allocate space for a node in the list used in DeletRect to
-// store Nodes that are too empty.
-static RTreeListNode * RTreeNewListNode()
-{
+/// Allocate space for a node in the list used in DeletRect to
+/// store Nodes that are too empty.
+static RTreeListNode * RTreeNewListNode() {
 	return (RTreeListNode *) malloc(sizeof(RTreeListNode));
 	//return new RTreeListNode;
 }
 
-static void RTreeFreeListNode(RTreeListNode *p)
-{
+static void RTreeFreeListNode(RTreeListNode *p) {
 	free(p);
 	//delete(p);
 }
 
-// Add a node to the reinsertion list.  All its branches will later
-// be reinserted into the index structure.
-static void RTreeReInsert(RTreeNode *n, RTreeListNode **ee)
-{
+/// Add a node to the reinsertion list.  All its branches will later
+/// be reinserted into the index structure.
+static void RTreeReInsert(RTreeNode *n, RTreeListNode **ee) {
 	register RTreeListNode *l;
 
 	l = RTreeNewListNode();
@@ -253,11 +240,10 @@ static void RTreeReInsert(RTreeNode *n, RTreeListNode **ee)
 	*ee = l;
 }
 
-// Delete a rectangle from non-root part of an index structure.
-// Called by RTreeDeleteRect.  Descends tree recursively, merges branches on the way back up.
-// Returns 1 if record not found, 0 if success.
-static int RTreeDeleteRect2(RTreeRect *R, void *Tid, RTreeNode *N, RTreeListNode **Ee)
-{
+/// Delete a rectangle from non-root part of an index structure.
+/// Called by RTreeDeleteRect.  Descends tree recursively, merges branches on the way back up.
+/// Returns 1 if record not found, 0 if success.
+static int RTreeDeleteRect2(RTreeRect *R, void *Tid, RTreeNode *N, RTreeListNode **Ee) {
 	register RTreeRect *r = R;
 	register void *tid = Tid;
 	register RTreeNode *n = N;
@@ -268,7 +254,7 @@ static int RTreeDeleteRect2(RTreeRect *R, void *Tid, RTreeNode *N, RTreeListNode
 	assert(tid >= 0);
 	assert(n->level >= 0);
 
-	if (n->level > 0)  // not a leaf node
+	if (n->level > 0)  /// not a leaf node
 	{
 	    for (i = 0; i < NODECARD; i++)
 	    {
@@ -280,8 +266,8 @@ static int RTreeDeleteRect2(RTreeRect *R, void *Tid, RTreeNode *N, RTreeListNode
 					n->branch[i].rect = RTreeNodeCover(n->branch[i].child);
 				else
 				{
-					// not enough entries in child,
-					// eliminate child node
+					/// not enough entries in child,
+					/// eliminate child node
 					//
 					RTreeReInsert(n->branch[i].child, ee);
 					RTreeDisconnectBranch(n, i);
@@ -292,7 +278,7 @@ static int RTreeDeleteRect2(RTreeRect *R, void *Tid, RTreeNode *N, RTreeListNode
 	    }
 	    return 1;
 	}
-	else  // a leaf node
+	else  /// a leaf node
 	{
 		for (i = 0; i < LEAFCARD; i++)
 		{
@@ -307,12 +293,11 @@ static int RTreeDeleteRect2(RTreeRect *R, void *Tid, RTreeNode *N, RTreeListNode
 	}
 }
 
-// Delete a data rectangle from an index structure.
-// Pass in a pointer to a RTreeRect, the tid of the record, ptr to ptr to root node.
-// Returns 1 if record not found, 0 if success.
-// RTreeDeleteRect provides for eliminating the root.
-int RTreeDeleteRect(RTreeRect *R, void *Tid, RTreeNode**Nn)
-{
+/// Delete a data rectangle from an index structure.
+/// Pass in a pointer to a RTreeRect, the tid of the record, ptr to ptr to root node.
+/// Returns 1 if record not found, 0 if success.
+/// RTreeDeleteRect provides for eliminating the root.
+int RTreeDeleteRect(RTreeRect *R, void *Tid, RTreeNode**Nn) {
 	register RTreeRect *r = R;
 	register void *tid = Tid;
 	register RTreeNode **nn = Nn;
@@ -370,4 +355,19 @@ int RTreeDeleteRect(RTreeRect *R, void *Tid, RTreeNode**Nn)
 	{
 		return 1;
 	}
+}
+
+void RTreeRecursivelyFreeBranch(RTreeBranch *b) {
+	RTreeRecursivelyFreeNode(b->child);
+}
+
+void RTreeRecursivelyFreeNode(RTreeNode *n) {
+	assert(n != NULL);
+	if(n->level)
+	{
+		for(int i=0; i<n->count; i++)
+			RTreeRecursivelyFreeBranch(&n->branch[i]);
+	}
+
+	RTreeFreeNode(n);
 }

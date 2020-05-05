@@ -1,38 +1,28 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "assert.h"
-#include "RTreeIndexImpl.h"
+#include "include/RTreeIndexImpl.h"
 
 #include <float.h>
 #include <math.h>
 
 #define BIG_NUM (FLT_MAX/4.0)
 
-
 #define Undefined(x) ((x)->boundary[0] > (x)->boundary[NUMDIMS])
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-
-/*-----------------------------------------------------------------------------
-| Initialize a rectangle to have all 0 coordinates.
------------------------------------------------------------------------------*/
-void RTreeInitRect(struct RTreeRect *R)
-{
+/// Initialize a rectangle to have all 0 coordinates.
+void RTreeInitRect(struct RTreeRect *R) {
 	register struct RTreeRect *r = R;
 	register int i;
 	for (i=0; i<NUMSIDES; i++)
 		r->boundary[i] = (RectReal)0;
 }
 
-
-/*-----------------------------------------------------------------------------
-| Return a rect whose first low side is higher than its opposite side -
-| interpreted as an undefined rect.
------------------------------------------------------------------------------*/
-struct RTreeRect RTreeNullRect()
-{
+/// Return a rect whose first low side is higher than its opposite side -
+/// interpreted as an undefined rect.
+struct RTreeRect RTreeNullRect() {
 	struct RTreeRect r;
 	register int i;
 
@@ -43,15 +33,10 @@ struct RTreeRect RTreeNullRect()
 	return r;
 }
 
-
 #if 0
-
-/*-----------------------------------------------------------------------------
-| Fills in random coordinates in a rectangle.
-| The low side is guaranteed to be less than the high side.
------------------------------------------------------------------------------*/
-void RTreeRandomRect(struct RTreeRect *R)
-{
+/// Fills in random coordinates in a rectangle.
+/// The low side is guaranteed to be less than the high side.
+void RTreeRandomRect(struct RTreeRect *R) {
 	register struct RTreeRect *r = R;
 	register int i;
 	register RectReal width;
@@ -68,17 +53,13 @@ void RTreeRandomRect(struct RTreeRect *R)
 	}
 }
 
-
-/*-----------------------------------------------------------------------------
-| Fill in the boundaries for a random search rectangle.
-| Pass in a pointer to a rect that contains all the data,
-| and a pointer to the rect to be filled in.
-| Generated rect is centered randomly anywhere in the data area,
-| and has size from 0 to the size of the data area in each dimension,
-| i.e. search rect can stick out beyond data area.
------------------------------------------------------------------------------*/
-void RTreeSearchRect(struct RTreeRect *Search, struct RTreeRect *Data)
-{
+/// Fill in the boundaries for a random search rectangle.
+/// Pass in a pointer to a rect that contains all the data,
+/// and a pointer to the rect to be filled in.
+/// Generated rect is centered randomly anywhere in the data area,
+/// and has size from 0 to the size of the data area in each dimension,
+/// i.e. search rect can stick out beyond data area.
+void RTreeSearchRect(struct RTreeRect *Search, struct RTreeRect *Data) {
 	register struct RTreeRect *search = Search, *data = Data;
 	register int i, j;
 	register RectReal size, center;
@@ -106,31 +87,10 @@ void RTreeSearchRect(struct RTreeRect *Search, struct RTreeRect *Data)
 		}
 	}
 }
-
 #endif
 
-/*-----------------------------------------------------------------------------
-| Print out the data for a rectangle.
------------------------------------------------------------------------------*/
-void RTreePrintRect(struct RTreeRect *R, int depth)
-{
-	register struct RTreeRect *r = R;
-	register int i;
-	assert(r);
-
-	RTreeTabIn(depth);
-	printf("rect:\n");
-	for (i = 0; i < NUMDIMS; i++) {
-		RTreeTabIn(depth+1);
-		printf("%f\t%f\n", r->boundary[i], r->boundary[i + NUMDIMS]);
-	}
-}
-
-/*-----------------------------------------------------------------------------
-| Calculate the n-dimensional volume of a rectangle
------------------------------------------------------------------------------*/
-RectReal RTreeRectVolume(struct RTreeRect *R)
-{
+/// Calculate the n-dimensional volume of a rectangle
+RectReal RTreeRectVolume(struct RTreeRect *R) {
 	register struct RTreeRect *r = R;
 	register int i;
 	register RectReal volume = (RectReal)1;
@@ -145,22 +105,17 @@ RectReal RTreeRectVolume(struct RTreeRect *R)
 	return volume;
 }
 
-
-/*-----------------------------------------------------------------------------
-| Define the NUMDIMS-dimensional volume the unit sphere in that dimension into
-| the symbol "UnitSphereVolume"
-| Note that if the gamma function is available in the math library and if the
-| compiler supports static initialization using functions, this is
-| easily computed for any dimension. If not, the value can be precomputed and
-| taken from a table. The following code can do it either way.
------------------------------------------------------------------------------*/
+/// Define the NUMDIMS-dimensional volume the unit sphere in that dimension into
+/// the symbol "UnitSphereVolume"
+/// Note that if the gamma function is available in the math library and if the
+/// compiler supports static initialization using functions, this is
+/// easily computed for any dimension. If not, the value can be precomputed and
+/// taken from a table. The following code can do it either way.
 
 #ifdef gamma
-
-/* computes the volume of an N-dimensional sphere. */
-/* derived from formule in "Regular Polytopes" by H.S.M Coxeter */
-static double sphere_volume(double dimension)
-{
+/// computes the volume of an N-dimensional sphere.
+/// derived from formule in "Regular Polytopes" by H.S.M Coxeter
+static double sphere_volume(double dimension) {
 	static const double log_pi = log(3.1415926535);
 	double log_gamma, log_volume;
 	log_gamma = gamma(dimension/2.0 + 1);
@@ -168,9 +123,7 @@ static double sphere_volume(double dimension)
 	return exp(log_volume);
 }
 static const double UnitSphereVolume = sphere_volume(NUMDIMS);
-
 #else
-
 /* Precomputed volumes of the unit spheres for the first few dimensions */
 const double UnitSphereVolumes[] = {
 	0.000000,  /* dimension   0 */
@@ -199,21 +152,14 @@ const double UnitSphereVolumes[] = {
 #	error "not enough precomputed sphere volumes"
 #endif
 #define UnitSphereVolume UnitSphereVolumes[NUMDIMS]
-
 #endif
 
-
-/*-----------------------------------------------------------------------------
-| Calculate the n-dimensional volume of the bounding sphere of a rectangle
------------------------------------------------------------------------------*/
+/// Calculate the n-dimensional volume of the bounding sphere of a rectangle
 
 #if 0
-/*
- * A fast approximation to the volume of the bounding sphere for the
- * given RTreeRect. By Paul B.
- */
-RectReal RTreeRectSphericalVolume(struct RTreeRect *R)
-{
+///A fast approximation to the volume of the bounding sphere for the
+/// given RTreeRect. By Paul B.
+RectReal RTreeRectSphericalVolume(struct RTreeRect *R) {
 	register struct RTreeRect *r = R;
 	register int i;
 	RectReal maxsize=(RectReal)0, c_size;
@@ -230,11 +176,8 @@ RectReal RTreeRectSphericalVolume(struct RTreeRect *R)
 }
 #endif
 
-/*
- * The exact volume of the bounding sphere for the given RTreeRect.
- */
-RectReal RTreeRectSphericalVolume(struct RTreeRect *R)
-{
+//// The exact volume of the bounding sphere for the given RTreeRect.
+RectReal RTreeRectSphericalVolume(struct RTreeRect *R) {
 	register struct RTreeRect *r = R;
 	register int i;
 	register double sum_of_squares=0, radius;
@@ -251,12 +194,8 @@ RectReal RTreeRectSphericalVolume(struct RTreeRect *R)
 	return (RectReal)(pow(radius, NUMDIMS) * UnitSphereVolume);
 }
 
-
-/*-----------------------------------------------------------------------------
-| Calculate the n-dimensional surface area of a rectangle
------------------------------------------------------------------------------*/
-RectReal RTreeRectSurfaceArea(struct RTreeRect *R)
-{
+/// Calculate the n-dimensional surface area of a rectangle
+RectReal RTreeRectSurfaceArea(struct RTreeRect *R) {
 	register struct RTreeRect *r = R;
 	register int i, j;
 	register RectReal sum = (RectReal)0;
@@ -279,13 +218,8 @@ RectReal RTreeRectSurfaceArea(struct RTreeRect *R)
 	return 2 * sum;
 }
 
-
-
-/*-----------------------------------------------------------------------------
-| Combine two rectangles, make one that includes both.
------------------------------------------------------------------------------*/
-struct RTreeRect RTreeCombineRect(struct RTreeRect *R, struct RTreeRect *Rr)
-{
+/// Combine two rectangles, make one that includes both.
+struct RTreeRect RTreeCombineRect(struct RTreeRect *R, struct RTreeRect *Rr) {
 	register struct RTreeRect *r = R, *rr = Rr;
 	register int i, j;
 	struct RTreeRect new_rect;
@@ -306,12 +240,8 @@ struct RTreeRect RTreeCombineRect(struct RTreeRect *R, struct RTreeRect *Rr)
 	return new_rect;
 }
 
-
-/*-----------------------------------------------------------------------------
-| Decide whether two rectangles overlap.
------------------------------------------------------------------------------*/
-int RTreeOverlap(struct RTreeRect *R, struct RTreeRect *S)
-{
+/// Decide whether two rectangles overlap.
+int RTreeOverlap(struct RTreeRect *R, struct RTreeRect *S) {
 	register struct RTreeRect *r = R, *s = S;
 	register int i, j;
 	assert(r && s);
@@ -328,12 +258,8 @@ int RTreeOverlap(struct RTreeRect *R, struct RTreeRect *S)
 	return TRUE;
 }
 
-
-/*-----------------------------------------------------------------------------
-| Decide whether rectangle r is contained in rectangle s.
------------------------------------------------------------------------------*/
-int RTreeContained(struct RTreeRect *R, struct RTreeRect *S)
-{
+/// Decide whether rectangle r is contained in rectangle s.
+int RTreeContained(struct RTreeRect *R, struct RTreeRect *S) {
 	register struct RTreeRect *r = R, *s = S;
 	register int i, j, result;
 	assert((int)r && (int)s);

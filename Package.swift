@@ -10,13 +10,13 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "RTreeIndexImpl",
+            path: "Source/RTreeIndexImpl",
+            exclude: ["module", "Reference"]),
+        .target(
             name: "SwiftRTree",
             dependencies: ["RTreeIndexImpl"],
             path: "Source",
             exclude: ["RTreeIndexImpl"]),
-        .target(
-            name: "RTreeIndexImpl",
-            path: "Source/RTreeIndexImpl",
-            exclude: ["module"]),
     ]
 )

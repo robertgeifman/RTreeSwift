@@ -71,8 +71,6 @@ extern RTreeNode * RTreeNewIndex();
 extern RTreeNode * RTreeNewNode();
 extern void RTreeInitNode(RTreeNode*);
 extern void RTreeFreeNode(RTreeNode *);
-extern void RTreePrintNode(RTreeNode *, int);
-extern void RTreeTabIn(int);
 extern RTreeRect RTreeNodeCover(RTreeNode *);
 extern void RTreeInitRect(RTreeRect*);
 extern RTreeRect RTreeNullRect();
@@ -82,12 +80,11 @@ extern RectReal RTreeRectVolume(RTreeRect *R);
 extern RTreeRect RTreeCombineRect(RTreeRect*, RTreeRect*);
 extern int RTreeOverlap(RTreeRect*, RTreeRect*);
 extern int RTreeContained(struct RTreeRect *R, struct RTreeRect *S);
-extern void RTreePrintRect(RTreeRect*, int);
 extern int RTreeAddBranch(RTreeBranch *, RTreeNode *, RTreeNode **);
 extern int RTreePickBranch(RTreeRect *, RTreeNode *);
 extern void RTreeDisconnectBranch(RTreeNode *, int);
 
-////////////////////////////////////////////////////////////
+// MARK: - RTreeSplitNode
 extern void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode **nn);
 extern void RTreeSplitNodeLinear(RTreeNode *n, RTreeBranch *b, RTreeNode **nn);
 #define RTreeSplitNode	RTreeSplitNodeQuadratic
@@ -97,4 +94,6 @@ extern int RTreeSetLeafMax(int);
 extern int RTreeGetNodeMax();
 extern int RTreeGetLeafMax();
 
+extern void RTreeRecursivelyFreeBranch(RTreeBranch *b);
+extern void RTreeRecursivelyFreeNode(RTreeNode *n);
 #endif /* _INDEX_ */

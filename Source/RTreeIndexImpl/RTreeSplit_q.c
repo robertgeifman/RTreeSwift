@@ -1,15 +1,12 @@
 
 #include <stdio.h>
 #include "assert.h"
-#include "RTreeIndexImpl.h"
-#include "RTreeCard.h"
-#include "RTreeSplit_q.h"
+#include "include/RTreeIndexImpl.h"
+#include "include/RTreeCard.h"
+#include "include/RTreeSplit_q.h"
 
-/*-----------------------------------------------------------------------------
-| Load branch buffer with branches from full node plus the extra branch.
------------------------------------------------------------------------------*/
-static void RTreeGetBranches(RTreeNode *n, RTreeBranch *b)
-{
+/// Load branch buffer with branches from full node plus the extra branch.
+static void RTreeGetBranches(RTreeNode *n, RTreeBranch *b) {
 	register int i;
 
 	assert(n);
@@ -35,11 +32,8 @@ static void RTreeGetBranches(RTreeNode *n, RTreeBranch *b)
 	RTreeInitNode(n);
 }
 
-/*-----------------------------------------------------------------------------
-| Put a branch in one of the groups.
------------------------------------------------------------------------------*/
-static void RTreeClassify(int i, int group, struct PartitionVars *p)
-{
+/// Put a branch in one of the groups.
+static void RTreeClassify(int i, int group, struct PartitionVars *p) {
 	assert(p);
 	assert(!p->taken[i]);
 
@@ -55,12 +49,9 @@ static void RTreeClassify(int i, int group, struct PartitionVars *p)
 	p->count[group]++;
 }
 
-/*-----------------------------------------------------------------------------
-| Pick two rects from set to be the first elements of the two groups.
-| Pick the two that waste the most area if covered by a single rectangle.
------------------------------------------------------------------------------*/
-static void RTreePickSeeds(struct PartitionVars *p)
-{
+/// Pick two rects from set to be the first elements of the two groups.
+/// Pick the two that waste the most area if covered by a single rectangle.
+static void RTreePickSeeds(struct PartitionVars *p) {
 	register int i, j, seed0 = 0, seed1 = 0;
 	RectReal worst, waste, area[MAXCARD+1];
 
@@ -89,11 +80,8 @@ static void RTreePickSeeds(struct PartitionVars *p)
 	RTreeClassify(seed1, 1, p);
 }
 
-/*-----------------------------------------------------------------------------
-| Copy branches from the buffer into two nodes according to the partition.
------------------------------------------------------------------------------*/
-static void RTreeLoadNodes(RTreeNode *n, RTreeNode *q, struct PartitionVars *p)
-{
+/// Copy branches from the buffer into two nodes according to the partition.
+static void RTreeLoadNodes(RTreeNode *n, RTreeNode *q, struct PartitionVars *p) {
 	register int i;
 	assert(n);
 	assert(q);
@@ -109,11 +97,8 @@ static void RTreeLoadNodes(RTreeNode *n, RTreeNode *q, struct PartitionVars *p)
 	}
 }
 
-/*-----------------------------------------------------------------------------
-| Initialize a PartitionVars structure.
------------------------------------------------------------------------------*/
-static void RTreeInitPVars(struct PartitionVars *p, int maxrects, int minfill)
-{
+/// Initialize a PartitionVars structure.
+static void RTreeInitPVars(struct PartitionVars *p, int maxrects, int minfill) {
 	register int i;
 	assert(p);
 
@@ -129,21 +114,18 @@ static void RTreeInitPVars(struct PartitionVars *p, int maxrects, int minfill)
 	}
 }
 
-/*-----------------------------------------------------------------------------
-| Method #0 for choosing a partition:
-| As the seeds for the two groups, pick the two rects that would waste the
-| most area if covered by a single rectangle, i.e. evidently the worst pair
-| to have in the same group.
-| Of the remaining, one at a time is chosen to be put in one of the two groups.
-| The one chosen is the one with the greatest difference in area expansion
-| depending on which group - the rect most strongly attracted to one group
-| and repelled from the other.
-| If one group gets too full (more would force other group to violate min
-| fill requirement) then other group gets the rest.
-| These last are the ones that can go in either group most easily.
------------------------------------------------------------------------------*/
-static void RTreeMethodZero(struct PartitionVars *p, int minfill)
-{
+/// Method #0 for choosing a partition:
+/// As the seeds for the two groups, pick the two rects that would waste the
+/// most area if covered by a single rectangle, i.e. evidently the worst pair
+/// to have in the same group.
+/// Of the remaining, one at a time is chosen to be put in one of the two groups.
+/// The one chosen is the one with the greatest difference in area expansion
+/// depending on which group - the rect most strongly attracted to one group
+/// and repelled from the other.
+/// If one group gets too full (more would force other group to violate min
+/// fill requirement) then other group gets the rest.
+/// These last are the ones that can go in either group most easily.
+static void RTreeMethodZero(struct PartitionVars *p, int minfill) {
 	register int i;
 	RectReal biggestDiff;
 	register int group, chosen = 0, betterGroup = 0;
@@ -215,14 +197,11 @@ static void RTreeMethodZero(struct PartitionVars *p, int minfill)
 	assert(p->count[0] >= p->minfill && p->count[1] >= p->minfill);
 }
 
-/*-----------------------------------------------------------------------------
-| Split a node.
-| Divides the nodes branches and the extra one between two nodes.
-| Old node is one of the new ones, and one really new one is created.
-| Tries more than one method for choosing a partition, uses best result.
------------------------------------------------------------------------------*/
-void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode **nn)
-{
+/// Split a node.
+/// Divides the nodes branches and the extra one between two nodes.
+/// Old node is one of the new ones, and one really new one is created.
+/// Tries more than one method for choosing a partition, uses best result.
+void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode **nn) {
 	register struct PartitionVars *p;
 	register int level;
 
@@ -246,47 +225,4 @@ void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode **nn)
 	(*nn)->level = n->level = level;
 	RTreeLoadNodes(n, *nn, p);
 	assert(n->count+(*nn)->count == p->total);
-}
-
-/*-----------------------------------------------------------------------------
-| Print out data for a partition from PartitionVars struct.
------------------------------------------------------------------------------*/
-__unused static void RTreePrintPVars(struct PartitionVars *p)
-{
-	register int i;
-	assert(p);
-
-	printf("\npartition:\n");
-	for (i=0; i<p->total; i++)
-	{
-		printf("%3d\t", i);
-	}
-	printf("\n");
-	for (i=0; i<p->total; i++)
-	{
-		if (p->taken[i])
-			printf("  t\t");
-		else
-			printf("\t");
-	}
-	printf("\n");
-	for (i=0; i<p->total; i++)
-	{
-		printf("%3d\t", p->partition[i]);
-	}
-	printf("\n");
-
-	printf("count[0] = %d  area = %f\n", p->count[0], p->area[0]);
-	printf("count[1] = %d  area = %f\n", p->count[1], p->area[1]);
-	if (p->area[0] + p->area[1] > 0)
-	{
-		printf("total area = %f  effectiveness = %3.2f\n",
-			p->area[0] + p->area[1],
-			(float)CoverSplitArea / (p->area[0] + p->area[1]));
-	}
-	printf("cover[0]:\n");
-	RTreePrintRect(&p->cover[0], 0);
-
-	printf("cover[1]:\n");
-	RTreePrintRect(&p->cover[1], 0);
 }
