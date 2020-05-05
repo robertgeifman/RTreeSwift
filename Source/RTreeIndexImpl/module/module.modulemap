@@ -1,0 +1,4 @@
+module rtree [system][extern_c] {
+header “../RTreeIndexImpl.h”
+export *
+}
