@@ -4,9 +4,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftRTree",
+    name: "RTreeSwift",
     products: [
-        .library(name: "SwiftRTree", targets: ["SwiftRTree"])
+        .library(name: "RTreeSwift", targets: ["RTreeSwift"])
     ],
     targets: [
         .target(
@@ -14,7 +14,7 @@ let package = Package(
             path: "Source/RTreeIndexImpl",
             exclude: ["module", "Reference"]),
         .target(
-            name: "SwiftRTree",
+            name: "RTreeSwift",
             dependencies: ["RTreeIndexImpl"],
             path: "Source",
             exclude: ["RTreeIndexImpl"]),

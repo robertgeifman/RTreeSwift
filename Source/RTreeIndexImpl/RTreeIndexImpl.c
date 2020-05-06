@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "assert.h"
 #include "include/RTreeIndexImpl.h"
-#include "include/RTreeCard.h"
 
 /// Make a new index, empty.  Consists of a single node.
 RTreeNode * RTreeNewIndex() {

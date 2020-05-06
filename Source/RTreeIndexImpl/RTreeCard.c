@@ -1,5 +1,4 @@
 #include "include/RTreeIndexImpl.h"
-#include "include/RTreeCard.h"
 
 int NODECARD = MAXCARD;
 int LEAFCARD = MAXCARD;

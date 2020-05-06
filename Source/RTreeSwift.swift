@@ -1,5 +1,5 @@
 //
-//  SwiftRTree.swift
+//  RTreeSwift.swift
 //  
 //
 //  Created by Robert Geifman on 05/05/2020.

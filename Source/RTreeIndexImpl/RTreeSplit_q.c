@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "assert.h"
 #include "include/RTreeIndexImpl.h"
-#include "include/RTreeCard.h"
 
 // #include "include/RTreeSplit_q.h"
 
