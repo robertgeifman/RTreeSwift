@@ -9,10 +9,6 @@ import Foundation
 import QuartzCore
 import RTreeIndexImpl
 
-func modified<T, R>(_ object: T, using closure: (T) -> R) -> R {
-    closure(object)
-}
-
 public protocol _Identifiable {
     /// A type representing the stable identity of the entity associated with `self`.
     associatedtype ID : Hashable
@@ -31,15 +27,16 @@ public protocol RTreeElement: _Identifiable {
 }
 
 // MARK: - RTreeOptions
-public enum RTreeOptions {
-	case `default`, `in`, enclosing
-	static let intersecting = Self.default
-	static let enclosedBy = Self.in
+public enum RTreeSearchOptions {
+	case intersecting, contained, containing
+
+	public static let `default` = Self.intersecting
+
 	var function: (UnsafeMutablePointer<RTreeNode>?, UnsafeMutablePointer<RTreeRect>?, UnsafeMutableRawPointer?, RTreeSearchHitCallback?) -> Int32 {
 		switch self {
-		case .default: return RTreeSearch
-		case .in: return RTreeSearchContained
-		case .enclosing: return RTreeSearchContaining
+		case .intersecting: return RTreeSearch
+		case .contained: return RTreeSearchContained
+		case .containing: return RTreeSearchContaining
 		}
 	}
 }
@@ -57,23 +54,6 @@ extension RTreeRect {
 	}
 }
 
-final internal class Iterator: Sequence {
-	typealias Element = (UnsafeMutableRawPointer, RTreeRect)
-	typealias Iterator = Array<Element>.Iterator
-	typealias Index = Array<Element>.Index
-	
-	var startIndex: Index { elements.startIndex }
-	var endIndex: Index { elements.endIndex }
-	
-	var elements = [Element]()
-
-	func append(_ element: Element) {
-		elements.append(element)
-	}
-	__consuming func makeIterator() -> Iterator {
-		elements.makeIterator()
-	}
-}
 // MARK: - RTree
 final public class RTree<Element> where Element: _Identifiable {
 	var root: UnsafeMutablePointer<RTreeNode>?
@@ -100,10 +80,10 @@ public extension RTree {
 			}
 		}
 	}
+	
 	func contains(_ element: Element) -> Bool {
 		nil != elements[element.id]
 	}
-	
 	func insert(_ element: Element, rect: CGRect) {
 		elements[element.id] = element
 
@@ -118,60 +98,80 @@ public extension RTree {
 			}
 		}
 	}
-	
-
-	static func handler(_ ptrID: UnsafeMutableRawPointer?, _ ptrRect: UnsafeMutablePointer<RTreeRect>?, userInfo: UnsafeMutableRawPointer?) -> Int32 {
-		guard let rect = ptrRect?.pointee, let ptrID = ptrID,
-			let iterator = userInfo?.assumingMemoryBound(to: Iterator.self).pointee else { return 0 }
-		iterator.append((ptrID, rect))
-		return 1
-	}
-
-	func remove(in rect: CGRect, options: RTreeOptions = .default) -> [Element] {
-		var rect = RTreeRect(rect)
-		var iterator = Iterator()
-		let function = options.function
-
-		_ = withUnsafeMutablePointer(to: &rect) { ptrRect in
-			withUnsafeMutablePointer(to: &iterator) { ptrIterator in
-				function(root, ptrRect, ptrIterator) {
-					guard let ptrID = $0, let rect = $1?.pointee,
-						let iterator = $2?.assumingMemoryBound(to: Iterator.self).pointee else { return 0 }
-					iterator.append((ptrID, rect))
-					return 1
-				}
-			}
-		}
-		
-		var deletedElements = [Element]()
-		for element in iterator {
-			var (ptrID, rect) = element
-			_ = withUnsafeMutablePointer(to: &rect) { ptrRect in
-				withUnsafeMutablePointer(to: &root) { ptrRoot in
-					let id = ptrID.assumingMemoryBound(to: Element.ID.self).pointee
-					guard let deletedElement = elements[id],
-						let index = elements.index(forKey: id),
-						0 != RTreeDeleteRect(ptrRect, ptrID, ptrRoot) else {
-						fatalError("this should not have happened!")
-					}
-					deletedElements.append(deletedElement)
-					elements.remove(at: index)
-				}
-			}
-			
-		}
-		return deletedElements
-	}
-
 	func removeAll() {
 		elements.removeAll()
 		RTreeRecursivelyFreeNode(root)
 		root = RTreeNewIndex()
 	}
+	func remove(in rect: CGRect, options: RTreeSearchOptions = .default) -> [Element] {
+		var foundElements = [(Element.ID, RTreeRect)]()
+		search(RTreeRect(rect), options: options) {
+			guard let ptrID = $0, let rect = $1?.pointee else { return 0 }
+			let id = ptrID.assumingMemoryBound(to: Element.ID.self).pointee
+			foundElements.append((id, rect))
+			return 1
+		}
 
-	func hitTest(_ point: CGPoint, body: (Element, CGRect) -> Bool) {
+		var deletedElements = [Element]()
+		withUnsafeMutablePointer(to: &root) { ptrRoot in
+			for element in foundElements {
+				var (id, rect) = element
+				guard let deletedElement = elements[id],
+					let index = elements.index(forKey: id) else {
+					fatalError("this should not have happened!")
+				}
+
+				let deleted = withUnsafeMutablePointer(to: &rect) { ptrRect in
+					withUnsafeMutablePointer(to: &id) { ptrID in
+						0 != RTreeDeleteRect(ptrRect, ptrID, ptrRoot)
+					}
+				}
+				
+				guard deleted else { fatalError("error removing element with id: \(id)") }
+
+				deletedElements.append(deletedElement)
+				elements.remove(at: index)
+			}
+		}
+		return deletedElements
+	}
+	func search(_ rect: CGRect, options: RTreeSearchOptions = .default, body: (Element.ID, CGRect) -> Bool) {
+		withoutActuallyEscaping(body) { escapingBody in
+			search(RTreeRect(rect), options: options) {
+				guard let rect = $1?.pointee, let ptrID = $0 else { return 0 }
+				let id = ptrID.assumingMemoryBound(to: Element.ID.self).pointee
+				return escapingBody(id, rect.rect) ? 1 : 0
+			}
+		}
+	}
+	func hitTest(_ point: CGPoint, size: CGSize = CGSize(width: 4, height: 4), body: (Element.ID, CGRect) -> Bool) {
+		let rect = CGRect(origin: point, size: size).offsetBy(dx: -size.width / 2, dy: -size.height / 2)
+		search(rect, body: body)
 	}
 
-	func hitTest(_ rect: CGRect, RTreeOptions: RTreeOptions = .default, body: (Element, CGRect) -> Bool) {
+	subscript(id: Element.ID) -> Element? {
+		elements[id]
+	}
+}
+
+// MARK: - Search
+fileprivate struct Function {
+	var body: (UnsafeMutableRawPointer?, UnsafeMutablePointer<RTreeRect>?) -> Int32
+}
+
+fileprivate func searchCallback(_ ptrID: UnsafeMutableRawPointer?, _ ptrRect: UnsafeMutablePointer<RTreeRect>?, userInfo: UnsafeMutableRawPointer?) -> Int32 {
+	guard let function = userInfo?.assumingMemoryBound(to: Function.self).pointee else { return 0 }
+	return function.body(ptrID, ptrRect)
+}
+
+fileprivate extension RTree {
+	func search(_ rect: RTreeRect, options: RTreeSearchOptions = .default, body: @escaping (UnsafeMutableRawPointer?, UnsafeMutablePointer<RTreeRect>?) -> Int32) {
+		var rect = rect
+		var function = Function(body: body)
+		_ = withUnsafeMutablePointer(to: &rect) { ptrRect in
+			withUnsafeMutablePointer(to: &function) { ptrFunction in
+				options.function(root, ptrRect, ptrFunction, searchCallback)
+			}
+		}
 	}
 }
