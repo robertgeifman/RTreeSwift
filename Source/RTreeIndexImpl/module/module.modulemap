@@ -1,7 +1,5 @@
 module rtree [system][extern_c] {
 header “../include/RTreeIndexImpl.h”
 header “../include/RTreeCard.h”
-header “../include/RTreeSplit_l.h”
-header “../include/RTreeSplit_q.h”
 export *
 }

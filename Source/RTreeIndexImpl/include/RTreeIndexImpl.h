@@ -7,11 +7,7 @@
 #define NDEBUG
 
 typedef float RectReal;
-
-
-/*-----------------------------------------------------------------------------
-| Global definitions.
------------------------------------------------------------------------------*/
+// Global definitions.
 
 #ifndef TRUE
 #define TRUE 1
@@ -59,11 +55,11 @@ typedef struct _RTreeListNode
  * It can terminate the search early by returning 0 in which case
  * the search will return the number of hits found up to that point.
  */
-typedef int (*RTreeSearchHitCallback)(int index, RTreeRect *, void* arg);
+typedef int (*RTreeSearchHitCallback)(void *, RTreeRect *, void *);
 
-extern int RTreeSearch(RTreeNode*, RTreeRect*, RTreeSearchHitCallback, void* cbarg);
-extern int RTreeSearchContained(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback shcb, void* cbarg);
-extern int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback shcb, void* cbarg);
+extern int RTreeSearch(RTreeNode*, RTreeRect*, void* cbarg, RTreeSearchHitCallback callback);
+extern int RTreeSearchContained(RTreeNode *N, RTreeRect *R, void* cbarg, RTreeSearchHitCallback callback);
+extern int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, void* cbarg, RTreeSearchHitCallback callback);
 
 extern int RTreeInsertRect(RTreeRect*, void *, RTreeNode**, int depth);
 extern int RTreeDeleteRect(RTreeRect*, void *, RTreeNode**);

@@ -14,7 +14,7 @@ RTreeNode * RTreeNewIndex() {
 
 /// Search in an index tree or subtree for all data retangles that overlap the argument rectangle.
 /// Return the number of qualifying data rects.
-int RTreeSearch(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg) {
+int RTreeSearch(RTreeNode *N, RTreeRect *R, void* cbarg, RTreeSearchHitCallback callback) {
 	register RTreeNode *n = N;
 	register RTreeRect *r = R; /// NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
 	register int i;
@@ -39,7 +39,7 @@ int RTreeSearch(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, voi
 		{
 			if (n->branch[i].child && RTreeOverlap(r, &n->branch[i].rect))
 			{
-				if(callback && !callback((int)n->branch[i].child, &n->branch[i].rect, cbarg))
+				if(callback && !callback(n->branch[i].child, &n->branch[i].rect, cbarg))
 					return 0; /// callback wants to terminate search early
 			}
 		}
@@ -49,7 +49,7 @@ int RTreeSearch(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, voi
 }
 
 /// Search in an index tree or subtree for all data retangles that contain the argument rectangle.
-int RTreeSearchContained(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg) {
+int RTreeSearchContained(RTreeNode *N, RTreeRect *R, void* cbarg, RTreeSearchHitCallback callback) {
 	register RTreeNode *n = N;
 	register RTreeRect *r = R; /// NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
 	register int i;
@@ -74,7 +74,7 @@ int RTreeSearchContained(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback call
 		{
 			if (n->branch[i].child && RTreeContained(&n->branch[i].rect, r))
 			{
-				if(callback && !callback((int)n->branch[i].child, &n->branch[i].rect, cbarg))
+				if(callback && !callback(n->branch[i].child, &n->branch[i].rect, cbarg))
 					return 0; /// callback wants to terminate search early
 			}
 		}
@@ -85,7 +85,7 @@ int RTreeSearchContained(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback call
 
 /// Search in an index tree or subtree for all data retangles that are contained within the argument rectangle.
 /// Return the number of qualifying data rects.
-int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback callback, void* cbarg) {
+int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, void* cbarg, RTreeSearchHitCallback callback) {
 	register RTreeNode *n = N;
 	register RTreeRect *r = R; /// NOTE: Suspected bug was R sent in as RTreeNode* and cast to RTreeRect* here. Fix not yet tested.
 	register int i;
@@ -110,7 +110,7 @@ int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, RTreeSearchHitCallback cal
 		{
 			if (n->branch[i].child && RTreeContained(r, &n->branch[i].rect))
 			{
-				if(callback && !callback((int)n->branch[i].child, &n->branch[i].rect, cbarg))
+				if(callback && !callback(n->branch[i].child, &n->branch[i].rect, cbarg))
 					return 0; /// callback wants to terminate search early
 			}
 		}

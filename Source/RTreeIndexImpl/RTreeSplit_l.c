@@ -3,7 +3,25 @@
 #include "assert.h"
 #include "include/RTreeIndexImpl.h"
 #include "include/RTreeCard.h"
-#include "include/RTreeSplit_l.h"
+
+// #include "include/RTreeSplit_l.h"
+
+#define METHODS 1
+
+static RTreeBranch BranchBuf[MAXCARD+1];
+static int BranchCount;
+static RTreeRect CoverSplit;
+
+/* variables for finding a partition */
+static struct PartitionVars
+{
+	int partition[MAXCARD+1];
+	int total, minfill;
+	int taken[MAXCARD+1];
+	int count[2];
+	RTreeRect cover[2];
+	RectReal area[2];
+} Partitions[METHODS];
 
 /// Load branch buffer with branches from full node plus the extra branch.
 static void RTreeGetBranches(RTreeNode *N, RTreeBranch *B) {
