@@ -31,7 +31,7 @@ public enum RTreeSearchOptions {
 }
 
 // MARK: - RTreeRect
-extension RTreeRect {
+public extension RTreeRect {
 	var rect: CGRect {
 		let origin = CGPoint(x: CGFloat(boundary.0), y: CGFloat(boundary.1))
 		let size = CGSize(width: CGFloat(boundary.2) - origin.x, height: CGFloat(boundary.3) - origin.y)
@@ -40,6 +40,26 @@ extension RTreeRect {
 	
 	init(_ rect: CGRect) {
 		self.init(boundary: (RectReal(rect.minX), RectReal(rect.minY), RectReal(rect.maxX), RectReal(rect.maxY)))
+	}
+}
+
+// MARK: - RTreeNode
+public extension RTreeNode {
+	enum Kind {
+		case leaf(Int), node(Int)
+	}
+	var kind: Kind {
+		level > 0 ? .node(Int(count)) : .leaf(Int(count))
+	}
+	var bounds: CGRect {
+		var root = self
+		return withUnsafeBytes(of: &root.branch) { rawPtr in
+			let branch = rawPtr.baseAddress!.assumingMemoryBound(to: RTreeBranch.self)
+			let count = Int(level > 0 ? NODECARD : LEAFCARD)
+			return (0 ..< count).reduce(CGRect.zero) {
+				$0.union(branch[$1].rect.rect)
+			}
+		}
 	}
 }
 
@@ -133,9 +153,17 @@ public extension RTree {
 			}
 		}
 	}
-	func hitTest(_ point: CGPoint, size: CGSize = CGSize(width: 4, height: 4), body: (Element.ID, CGRect) -> Bool) {
+	func search(_ point: CGPoint, size: CGSize = CGSize(width: 4, height: 4), body: (Element.ID, CGRect) -> Bool) {
 		let rect = CGRect(origin: point, size: size).offsetBy(dx: -size.width / 2, dy: -size.height / 2)
 		search(rect, body: body)
+	}
+	func element(at point: CGPoint, size: CGSize = CGSize(width: 4, height: 4)) -> Element? {
+		var result: Element?
+		search(point, size: size) { elementID, _ in
+			result = elements[elementID]
+			return false
+		}
+		return result
 	}
 
 	subscript(id: Element.ID) -> Element? {

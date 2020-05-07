@@ -257,23 +257,23 @@ static int RTreeDeleteRect2(RTreeRect *R, void *Tid, RTreeNode *N, RTreeListNode
 	{
 	    for (i = 0; i < NODECARD; i++)
 	    {
-		if (n->branch[i].child && RTreeOverlap(r, &(n->branch[i].rect)))
-		{
-			if (!RTreeDeleteRect2(r, tid, n->branch[i].child, ee))
+			if (n->branch[i].child && RTreeOverlap(r, &(n->branch[i].rect)))
 			{
-				if (n->branch[i].child->count >= MinNodeFill)
-					n->branch[i].rect = RTreeNodeCover(n->branch[i].child);
-				else
+				if (!RTreeDeleteRect2(r, tid, n->branch[i].child, ee))
 				{
-					/// not enough entries in child,
-					/// eliminate child node
-					//
-					RTreeReInsert(n->branch[i].child, ee);
-					RTreeDisconnectBranch(n, i);
+					if (n->branch[i].child->count >= MinNodeFill)
+						n->branch[i].rect = RTreeNodeCover(n->branch[i].child);
+					else
+					{
+						/// not enough entries in child,
+						/// eliminate child node
+						//
+						RTreeReInsert(n->branch[i].child, ee);
+						RTreeDisconnectBranch(n, i);
+					}
+					return 0;
 				}
-				return 0;
 			}
-		}
 	    }
 	    return 1;
 	}
