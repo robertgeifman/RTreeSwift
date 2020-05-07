@@ -5,12 +5,23 @@ import PackageDescription
 
 let package = Package(
     name: "RTreeSwift",
+    platforms: [
+        .macOS(.v10_14),
+        .iOS(.v12),
+        .tvOS(.v12),
+        .watchOS(.v5)
+    ],
     products: [
         .library(name: "RTreeSwift", targets: ["RTreeSwift"])
+    ],
+    dependencies: [
+        // Dependencies declare other packages that this package depends on.
+		.package(url: "https://github.com/robertgeifman/Interoperability.git", .branch("master")),
     ],
     targets: [
         .target(
             name: "RTreeIndexImpl",
+            dependencies: ["Interoperability"],
             path: "Source/RTreeIndexImpl",
             exclude: ["module", "Reference"]),
         .target(

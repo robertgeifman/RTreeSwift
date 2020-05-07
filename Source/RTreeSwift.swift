@@ -8,21 +8,10 @@
 import Foundation
 import QuartzCore
 import RTreeIndexImpl
-
-public protocol _Identifiable {
-    /// A type representing the stable identity of the entity associated with `self`.
-    associatedtype ID : Hashable
-    /// The stable identity of the entity associated with `self`.
-    var id: ID { get }
-}
-
-extension _Identifiable where Self: AnyObject {
-    /// The stable identity of the entity associated with `self`.
-    public var id: ObjectIdentifier { ObjectIdentifier(self) }
-}
+import Interoperability
 
 // MARK: - RTreeElement
-public protocol RTreeElement: _Identifiable {
+public protocol RTreeElement: Identifiable {
 	var rect: CGRect { get }
 }
 
@@ -55,7 +44,7 @@ extension RTreeRect {
 }
 
 // MARK: - RTree
-final public class RTree<Element> where Element: _Identifiable {
+final public class RTree<Element> where Element: Identifiable {
 	var root: UnsafeMutablePointer<RTreeNode>?
 	var elements = [Element.ID: Element]()
 	deinit {
