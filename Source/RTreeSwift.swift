@@ -11,7 +11,7 @@ import RTreeIndexImpl
 import Interoperability
 
 // MARK: - RTreeElement
-public protocol RTreeElement: Identifiable {
+public protocol RTreeElement: Interoperability.Identifiable {
 	var rect: CGRect { get }
 }
 
@@ -44,7 +44,7 @@ extension RTreeRect {
 }
 
 // MARK: - RTree
-final public class RTree<Element> where Element: Identifiable {
+final public class RTree<Element> where Element: Interoperability.Identifiable {
 	var root: UnsafeMutablePointer<RTreeNode>?
 	var elements = [Element.ID: Element]()
 	deinit {
