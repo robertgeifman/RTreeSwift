@@ -8,11 +8,13 @@
 import Foundation
 import QuartzCore
 import RTreeIndexImpl
-import Interoperability
 
 // MARK: - RTreeElement
-public protocol RTreeElement: Interoperability.Identifiable {
-	var rect: CGRect { get }
+public protocol RTreeElement {
+    associatedtype ID: Hashable
+    /// The stable identity of the entity associated with `self`, a unique identifier that can be compared for equality.
+    var id: ID { get }
+//	var rect: CGRect { get }
 }
 
 // MARK: - RTreeOptions
@@ -64,7 +66,7 @@ public extension RTreeNode {
 }
 
 // MARK: - RTree
-final public class RTree<Element> where Element: Interoperability.Identifiable {
+final public class RTree<Element> where Element: RTreeElement {
 	var root: UnsafeMutablePointer<RTreeNode>?
 	var elements = [Element.ID: Element]()
 	deinit {
