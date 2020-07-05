@@ -9,14 +9,6 @@ import Foundation
 import QuartzCore
 import RTreeIndexImpl
 
-// MARK: - RTreeElement
-public protocol RTreeElement {
-    associatedtype ID: Hashable
-    /// The stable identity of the entity associated with `self`, a unique identifier that can be compared for equality.
-    var id: ID { get }
-//	var rect: CGRect { get }
-}
-
 // MARK: - RTreeOptions
 public enum RTreeSearchOptions {
 	case intersecting, contained, containing
@@ -40,6 +32,9 @@ public extension RTreeRect {
 		return CGRect(origin: origin, size: size)
 	}
 	
+	init(_ point: CGPoint) {
+		self.init(boundary: (RectReal(point.x), RectReal(point.y), RectReal(point.x), RectReal(point.y)))
+	}
 	init(_ rect: CGRect) {
 		self.init(boundary: (RectReal(rect.minX), RectReal(rect.minY), RectReal(rect.maxX), RectReal(rect.maxY)))
 	}
@@ -66,14 +61,20 @@ public extension RTreeNode {
 }
 
 // MARK: - RTree
-final public class RTree<Element> where Element: RTreeElement {
+final public class RTree<Element> where Element: Hashable {
 	var root: UnsafeMutablePointer<RTreeNode>?
-	var elements = [Element.ID: Element]()
+	var elements = Set<Element>()
 	deinit {
 		RTreeRecursivelyFreeNode(root)
 	}
 	public init() {
 		root = RTreeNewIndex()
+	}
+}
+
+extension RTree: Sequence {
+	public func makeIterator() -> AnyIterator<Element> {
+		AnyIterator(elements.makeIterator())
 	}
 }
 
@@ -92,84 +93,98 @@ public extension RTree {
 		}
 	}
 	
-	func contains(_ element: Element) -> Bool {
-		nil != elements[element.id]
-	}
-	func insert(_ element: Element, rect: CGRect) {
-		elements[element.id] = element
+	func insert(_ element: Element, at point: CGPoint) {
+		elements.insert(element)
 
-		var id = element.id
-		var rect = RTreeRect(rect)
+		var element = element
+		var rect = RTreeRect(point)
 
 		withUnsafeMutablePointer(to: &rect) { ptrRect in
-			withUnsafeMutableBytes(of: &id) { ptrID in
+			withUnsafeMutableBytes(of: &element) { ptrElement in
 				withUnsafeMutablePointer(to: &root) { ptrRoot in
-					_ = RTreeInsertRect(ptrRect, ptrID.baseAddress, ptrRoot, 0)
+					_ = RTreeInsertRect(ptrRect, ptrElement.baseAddress, ptrRoot, 0)
 				}
 			}
 		}
+	}
+	func insert(_ element: Element, in rect: CGRect) {
+		elements.insert(element)
+
+		var element = element
+		var rect = RTreeRect(rect)
+
+		withUnsafeMutablePointer(to: &rect) { ptrRect in
+			withUnsafeMutableBytes(of: &element) { ptrElement in
+				withUnsafeMutablePointer(to: &root) { ptrRoot in
+					_ = RTreeInsertRect(ptrRect, ptrElement.baseAddress, ptrRoot, 0)
+				}
+			}
+		}
+	}
+
+	func remove(in rect: CGRect, options: RTreeSearchOptions = .default) -> [Element] {
+		var foundElements = [(Element, RTreeRect)]()
+		search(RTreeRect(rect), options: options) {
+			guard let ptrElement = $0, let rect = $1?.pointee else { return 0 }
+			let element = ptrElement.assumingMemoryBound(to: Element.self).pointee
+			foundElements.append((element, rect))
+			return 1
+		}
+
+		var deletedElements = [Element]()
+		withUnsafeMutablePointer(to: &root) { ptrRoot in
+			for foundElement in foundElements {
+				var (element, rect) = foundElement
+
+				guard elements.contains(element) else {
+					fatalError("this should not have happened!")
+				}
+
+				let deleted = withUnsafeMutablePointer(to: &rect) { ptrRect in
+					withUnsafeMutablePointer(to: &element) { ptrElement in
+						0 != RTreeDeleteRect(ptrRect, ptrElement, ptrRoot)
+					}
+				}
+				
+				guard deleted else { fatalError("error removing element with id: \(element)") }
+
+				deletedElements.append(element)
+				elements.remove(element)
+			}
+		}
+		return deletedElements
 	}
 	func removeAll() {
 		elements.removeAll()
 		RTreeRecursivelyFreeNode(root)
 		root = RTreeNewIndex()
 	}
-	func remove(in rect: CGRect, options: RTreeSearchOptions = .default) -> [Element] {
-		var foundElements = [(Element.ID, RTreeRect)]()
-		search(RTreeRect(rect), options: options) {
-			guard let ptrID = $0, let rect = $1?.pointee else { return 0 }
-			let id = ptrID.assumingMemoryBound(to: Element.ID.self).pointee
-			foundElements.append((id, rect))
-			return 1
-		}
 
-		var deletedElements = [Element]()
-		withUnsafeMutablePointer(to: &root) { ptrRoot in
-			for element in foundElements {
-				var (id, rect) = element
-				guard let deletedElement = elements[id],
-					let index = elements.index(forKey: id) else {
-					fatalError("this should not have happened!")
-				}
-
-				let deleted = withUnsafeMutablePointer(to: &rect) { ptrRect in
-					withUnsafeMutablePointer(to: &id) { ptrID in
-						0 != RTreeDeleteRect(ptrRect, ptrID, ptrRoot)
-					}
-				}
-				
-				guard deleted else { fatalError("error removing element with id: \(id)") }
-
-				deletedElements.append(deletedElement)
-				elements.remove(at: index)
-			}
-		}
-		return deletedElements
+	func contains(_ element: Element) -> Bool {
+		elements.contains(element)
 	}
-	func search(_ rect: CGRect, options: RTreeSearchOptions = .default, body: (Element.ID, CGRect) -> Bool) {
+
+	func search(_ rect: CGRect, options: RTreeSearchOptions = .default, body: (Element, CGRect) -> Bool) {
 		withoutActuallyEscaping(body) { escapingBody in
 			search(RTreeRect(rect), options: options) {
-				guard let rect = $1?.pointee, let ptrID = $0 else { return 0 }
-				let id = ptrID.assumingMemoryBound(to: Element.ID.self).pointee
+				guard let rect = $1?.pointee, let ptrElement = $0 else { return 0 }
+				let id = ptrElement.assumingMemoryBound(to: Element.self).pointee
 				return escapingBody(id, rect.rect) ? 1 : 0
 			}
 		}
 	}
-	func search(_ point: CGPoint, size: CGSize = CGSize(width: 4, height: 4), body: (Element.ID, CGRect) -> Bool) {
+	func search(_ point: CGPoint, size: CGSize = CGSize(width: 4, height: 4), body: (Element, CGRect) -> Bool) {
 		let rect = CGRect(origin: point, size: size).offsetBy(dx: -size.width / 2, dy: -size.height / 2)
 		search(rect, body: body)
 	}
+
 	func element(at point: CGPoint, size: CGSize = CGSize(width: 4, height: 4)) -> Element? {
 		var result: Element?
-		search(point, size: size) { elementID, _ in
-			result = elements[elementID]
+		search(point, size: size) { element, _ in
+			result = element
 			return false
 		}
 		return result
-	}
-
-	subscript(id: Element.ID) -> Element? {
-		elements[id]
 	}
 }
 

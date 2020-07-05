@@ -26,6 +26,6 @@ let package = Package(
             name: "RTreeSwift",
             dependencies: ["RTreeIndexImpl"],
             path: "Source",
-            exclude: ["RTreeIndexImpl"]),
+            exclude: ["RTreeIndexImpl", "rtree-unused"]),
     ]
 )
