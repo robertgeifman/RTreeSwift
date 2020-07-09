@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include "assert.h"
 #include "include/RTreeIndexImpl.h"
@@ -7,7 +6,7 @@
 
 #define METHODS 1
 
-static RTreeBranch BranchBuf[MAXCARD+1];
+static RTreeBranch BranchBuf[MAXCARD + 1];
 static int BranchCount;
 static RTreeRect CoverSplit;
 static RectReal CoverSplitArea;
@@ -15,9 +14,9 @@ static RectReal CoverSplitArea;
 /* variables for finding a partition */
 static struct PartitionVars
 {
-	int partition[MAXCARD+1];
+	int partition[MAXCARD + 1];
 	int total, minfill;
-	int taken[MAXCARD+1];
+	int taken[MAXCARD + 1];
 	int count[2];
 	RTreeRect cover[2];
 	RectReal area[2];
@@ -31,20 +30,20 @@ static void RTreeGetBranches(RTreeNode *n, RTreeBranch *b) {
 	assert(b);
 
 	/* load the branch buffer */
-	for (i=0; i<MAXKIDS(n); i++)
-	{
+	for(i = 0; i < MAXKIDS(n); i++) {
 		assert(n->branch[i].child); /* n should have every entry full */
 		BranchBuf[i] = n->branch[i];
 	}
+
 	BranchBuf[MAXKIDS(n)] = *b;
 	BranchCount = MAXKIDS(n) + 1;
 
 	/* calculate rect containing all in the set */
 	CoverSplit = BranchBuf[0].rect;
-	for (i=1; i<MAXKIDS(n)+1; i++)
-	{
+	for(i = 1; i < MAXKIDS(n) + 1; i++) {
 		CoverSplit = RTreeCombineRect(&CoverSplit, &BranchBuf[i].rect);
 	}
+
 	CoverSplitArea = RTreeRectSphericalVolume(&CoverSplit);
 
 	RTreeInitNode(n);
@@ -58,11 +57,13 @@ static void RTreeClassify(int i, int group, struct PartitionVars *p) {
 	p->partition[i] = group;
 	p->taken[i] = TRUE;
 
-	if (p->count[group] == 0)
+	if(p->count[group] == 0) {
 		p->cover[group] = BranchBuf[i].rect;
-	else
+	} else {
 		p->cover[group] =
 			RTreeCombineRect(&BranchBuf[i].rect, &p->cover[group]);
+	}
+
 	p->area[group] = RTreeRectSphericalVolume(&p->cover[group]);
 	p->count[group]++;
 }
@@ -71,29 +72,28 @@ static void RTreeClassify(int i, int group, struct PartitionVars *p) {
 /// Pick the two that waste the most area if covered by a single rectangle.
 static void RTreePickSeeds(struct PartitionVars *p) {
 	register int i, j, seed0 = 0, seed1 = 0;
-	RectReal worst, waste, area[MAXCARD+1];
+	RectReal worst, waste, area[MAXCARD + 1];
 
-	for (i=0; i<p->total; i++)
+	for(i = 0; i < p->total; i++) {
 		area[i] = RTreeRectSphericalVolume(&BranchBuf[i].rect);
+	}
 
 	worst = -CoverSplitArea - 1;
-	for (i=0; i<p->total-1; i++)
-	{
-		for (j=i+1; j<p->total; j++)
-		{
+	for(i = 0; i < p->total - 1; i++) {
+		for(j = i + 1; j < p->total; j++) {
 			RTreeRect one_rect = RTreeCombineRect(
-						&BranchBuf[i].rect,
-						&BranchBuf[j].rect);
+				&BranchBuf[i].rect,
+				&BranchBuf[j].rect);
 			waste = RTreeRectSphericalVolume(&one_rect) -
-					area[i] - area[j];
-			if (waste > worst)
-			{
+				area[i] - area[j];
+			if(waste > worst) {
 				worst = waste;
 				seed0 = i;
 				seed1 = j;
 			}
 		}
 	}
+
 	RTreeClassify(seed0, 0, p);
 	RTreeClassify(seed1, 1, p);
 }
@@ -105,13 +105,13 @@ static void RTreeLoadNodes(RTreeNode *n, RTreeNode *q, struct PartitionVars *p) 
 	assert(q);
 	assert(p);
 
-	for (i=0; i<p->total; i++)
-	{
+	for(i = 0; i < p->total; i++) {
 		assert(p->partition[i] == 0 || p->partition[i] == 1);
-		if (p->partition[i] == 0)
+		if(p->partition[i] == 0) {
 			RTreeAddBranch(&BranchBuf[i], n, NULL);
-		else if (p->partition[i] == 1)
+		} else if(p->partition[i] == 1) {
 			RTreeAddBranch(&BranchBuf[i], q, NULL);
+		}
 	}
 }
 
@@ -125,8 +125,7 @@ static void RTreeInitPVars(struct PartitionVars *p, int maxrects, int minfill) {
 	p->area[0] = p->area[1] = (RectReal)0;
 	p->total = maxrects;
 	p->minfill = minfill;
-	for (i=0; i<maxrects; i++)
-	{
+	for(i = 0; i < maxrects; i++) {
 		p->taken[i] = FALSE;
 		p->partition[i] = -1;
 	}
@@ -152,15 +151,12 @@ static void RTreeMethodZero(struct PartitionVars *p, int minfill) {
 	RTreeInitPVars(p, BranchCount, minfill);
 	RTreePickSeeds(p);
 
-	while (p->count[0] + p->count[1] < p->total
-		&& p->count[0] < p->total - p->minfill
-		&& p->count[1] < p->total - p->minfill)
-	{
-		biggestDiff = (RectReal)-1.;
-		for (i=0; i<p->total; i++)
-		{
-			if (!p->taken[i])
-			{
+	while(p->count[0] + p->count[1] < p->total
+	      && p->count[0] < p->total - p->minfill
+	      && p->count[1] < p->total - p->minfill) {
+		biggestDiff = (RectReal) - 1.;
+		for(i = 0; i < p->total; i++) {
+			if(!p->taken[i]) {
 				RTreeRect *r, rect_0, rect_1;
 				RectReal growth0, growth1, diff;
 
@@ -168,46 +164,44 @@ static void RTreeMethodZero(struct PartitionVars *p, int minfill) {
 				rect_0 = RTreeCombineRect(r, &p->cover[0]);
 				rect_1 = RTreeCombineRect(r, &p->cover[1]);
 				growth0 = RTreeRectSphericalVolume(
-						&rect_0)-p->area[0];
+					&rect_0) - p->area[0];
 				growth1 = RTreeRectSphericalVolume(
-						&rect_1)-p->area[1];
+					&rect_1) - p->area[1];
 				diff = growth1 - growth0;
-				if (diff >= 0)
+				if(diff >= 0) {
 					group = 0;
-				else
-				{
+				} else {
 					group = 1;
 					diff = -diff;
 				}
 
-				if (diff > biggestDiff)
-				{
+				if(diff > biggestDiff) {
 					biggestDiff = diff;
 					chosen = i;
 					betterGroup = group;
-				}
-				else if (diff==biggestDiff &&
-					 p->count[group]<p->count[betterGroup])
-				{
+				} else if((diff == biggestDiff) &&
+					  (p->count[group] < p->count[betterGroup])) {
 					chosen = i;
 					betterGroup = group;
 				}
 			}
 		}
+
 		RTreeClassify(chosen, betterGroup, p);
 	}
 
 	/* if one group too full, put remaining rects in the other */
-	if (p->count[0] + p->count[1] < p->total)
-	{
-		if (p->count[0] >= p->total - p->minfill)
+	if(p->count[0] + p->count[1] < p->total) {
+		if(p->count[0] >= p->total - p->minfill) {
 			group = 1;
-		else
+		} else {
 			group = 0;
-		for (i=0; i<p->total; i++)
-		{
-			if (!p->taken[i])
+		}
+
+		for(i = 0; i < p->total; i++) {
+			if(!p->taken[i]) {
 				RTreeClassify(i, group, p);
+			}
 		}
 	}
 
@@ -219,7 +213,7 @@ static void RTreeMethodZero(struct PartitionVars *p, int minfill) {
 /// Divides the nodes branches and the extra one between two nodes.
 /// Old node is one of the new ones, and one really new one is created.
 /// Tries more than one method for choosing a partition, uses best result.
-void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode **nn) {
+void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode * *nn) {
 	register struct PartitionVars *p;
 	register int level;
 
@@ -233,7 +227,7 @@ void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode **nn) {
 	/* find partition */
 	p = &Partitions[0];
 	/* Note: can't use MINFILL(n) below since n was cleared by GetBranches() */
-	RTreeMethodZero(p, level>0 ? MinNodeFill : MinLeafFill);
+	RTreeMethodZero(p, level > 0 ? MinNodeFill : MinLeafFill);
 
 	/*
 	 * put branches from buffer into 2 nodes
@@ -242,5 +236,5 @@ void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode **nn) {
 	*nn = RTreeNewNode();
 	(*nn)->level = n->level = level;
 	RTreeLoadNodes(n, *nn, p);
-	assert(n->count+(*nn)->count == p->total);
+	assert(n->count + (*nn)->count == p->total);
 }

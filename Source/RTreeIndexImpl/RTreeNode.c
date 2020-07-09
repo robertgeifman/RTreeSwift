@@ -15,8 +15,9 @@ void RTreeInitNode(RTreeNode *N) {
 	register int i;
 	n->count = 0;
 	n->level = -1;
-	for (i = 0; i < MAXCARD; i++)
+	for(i = 0; i < MAXCARD; i++) {
 		RTreeInitBranch(&(n->branch[i]));
+	}
 }
 
 /// Make a new node and initialize to have all branch cells empty.
@@ -24,7 +25,7 @@ RTreeNode * RTreeNewNode() {
 	register RTreeNode *n;
 
 	//n = new RTreeNode;
-	n = (RTreeNode*)malloc(sizeof(RTreeNode));
+	n = (RTreeNode *)malloc(sizeof(RTreeNode));
 	assert(n);
 	RTreeInitNode(n);
 	return n;
@@ -40,22 +41,22 @@ void RTreeFreeNode(RTreeNode *p) {
 /// branches of a node.
 RTreeRect RTreeNodeCover(RTreeNode *N) {
 	register RTreeNode *n = N;
-	register int i, first_time=1;
+	register int i, first_time = 1;
 	RTreeRect r;
 	assert(n);
 
 	RTreeInitRect(&r);
-	for (i = 0; i < MAXKIDS(n); i++)
-		if (n->branch[i].child)
-		{
-			if (first_time)
-			{
+	for(i = 0; i < MAXKIDS(n); i++) {
+		if(n->branch[i].child) {
+			if(first_time) {
 				r = n->branch[i].rect;
 				first_time = 0;
-			}
-			else
+			} else {
 				r = RTreeCombineRect(&r, &(n->branch[i].rect));
+			}
 		}
+	}
+
 	return r;
 }
 
@@ -68,35 +69,31 @@ int RTreePickBranch(RTreeRect *R, RTreeNode *N) {
 	register RTreeRect *r = R;
 	register RTreeNode *n = N;
 	register RTreeRect *rr;
-	register int i, first_time=1;
-	RectReal increase, bestIncr=(RectReal)-1, area, bestArea = 0.0;
+	register int i, first_time = 1;
+	RectReal increase, bestIncr = (RectReal) - 1, area, bestArea = 0.0;
 	int best = 0;
 	RTreeRect tmp_rect;
 	assert(r && n);
 
-	for (i=0; i<MAXKIDS(n); i++)
-	{
-		if (n->branch[i].child)
-		{
+	for(i = 0; i < MAXKIDS(n); i++) {
+		if(n->branch[i].child) {
 			rr = &n->branch[i].rect;
 			area = RTreeRectSphericalVolume(rr);
 			tmp_rect = RTreeCombineRect(r, rr);
 			increase = RTreeRectSphericalVolume(&tmp_rect) - area;
-			if (increase < bestIncr || first_time)
-			{
+			if((increase < bestIncr) || first_time) {
 				best = i;
 				bestArea = area;
 				bestIncr = increase;
 				first_time = 0;
-			}
-			else if (increase == bestIncr && area < bestArea)
-			{
+			} else if((increase == bestIncr) && (area < bestArea)) {
 				best = i;
 				bestArea = area;
 				bestIncr = increase;
 			}
 		}
 	}
+
 	return best;
 }
 
@@ -104,30 +101,26 @@ int RTreePickBranch(RTreeRect *R, RTreeNode *N) {
 /// Returns 0 if node not split.  Old node updated.
 /// Returns 1 if node split, sets *new_node to address of new node.
 /// Old node updated, becomes one of two.
-int RTreeAddBranch(RTreeBranch *B, RTreeNode *N, RTreeNode **New_node) {
+int RTreeAddBranch(RTreeBranch *B, RTreeNode *N, RTreeNode * *New_node) {
 	register RTreeBranch *b = B;
 	register RTreeNode *n = N;
-	register RTreeNode **new_node = New_node;
+	register RTreeNode * *new_node = New_node;
 	register int i;
 
 	assert(b);
 	assert(n);
 
-	if (n->count < MAXKIDS(n))  /* split won't be necessary */
-	{
-		for (i = 0; i < MAXKIDS(n); i++)  /* find empty branch */
-		{
-			if (n->branch[i].child == NULL)
-			{
+	if(n->count < MAXKIDS(n)) { /* split won't be necessary */
+		for(i = 0; i < MAXKIDS(n); i++) { /* find empty branch */
+			if(n->branch[i].child == NULL) {
 				n->branch[i] = *b;
 				n->count++;
 				break;
 			}
 		}
+
 		return 0;
-	}
-	else
-	{
+	} else {
 		assert(new_node);
 		RTreeSplitNode(n, b, new_node);
 		return 1;
@@ -136,7 +129,7 @@ int RTreeAddBranch(RTreeBranch *B, RTreeNode *N, RTreeNode **New_node) {
 
 /// Disconnect a dependent node.
 void RTreeDisconnectBranch(RTreeNode *n, int i) {
-	assert(n && i>=0 && i<MAXKIDS(n));
+	assert(n && i >= 0 && i < MAXKIDS(n));
 	assert(n->branch[i].child);
 
 	RTreeInitBranch(&(n->branch[i]));

@@ -48,6 +48,13 @@ typedef struct _RTreeListNode
 	RTreeNode *node;
 } RTreeListNode;
 
+typedef struct RTreeSearchContext
+{
+	RTreeNode *node;
+	RTreeRect *rect;
+	int i;
+} RTreeSearchContext;
+
 /*
  * If passed to a tree search, this callback function will be called
  * with the ID of each data rect that overlaps the search rect
@@ -56,8 +63,10 @@ typedef struct _RTreeListNode
  * the search will return the number of hits found up to that point.
  */
 typedef int (*RTreeSearchHitCallback)(void *, RTreeRect *, void *);
+typedef int (*RTreeSplitNodeCallback)(RTreeNode *, RTreeBranch *, RTreeNode **);
 
 extern int RTreeSearch(RTreeNode*, RTreeRect*, void* cbarg, RTreeSearchHitCallback callback);
+extern int RTreeSearchNonRecursive(RTreeNode*, RTreeRect*, RTreeSearchContext* context);
 extern int RTreeSearchContained(RTreeNode *N, RTreeRect *R, void* cbarg, RTreeSearchHitCallback callback);
 extern int RTreeSearchContaining(RTreeNode *N, RTreeRect *R, void* cbarg, RTreeSearchHitCallback callback);
 
