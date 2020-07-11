@@ -1,4 +1,4 @@
-// CEGeometryIndex.m : implementation of the CEGeometryIndex class
+// CEGeometryIndex.m: implementation of the CEGeometryIndex class
 
 #import "CEGeometryIndex.h"
 #import "CEGeometryIndexNode.h"
@@ -141,7 +141,7 @@ static int splitCost(NSRect rect1, NSRect rect2)
 
 	NSZoneFree(rectZone, rectArray);
 
-	int index = (result[0] < result[1] ? 0 : 1);
+	int index = (result[0] < result[1] ? 0: 1);
 	NSSet *a1 = [NSSet setWithArray:[sortedObjects[index] subarrayWithRange:NSMakeRange(0, position[index])]];
 	NSSet *a2 = [NSSet setWithArray:[sortedObjects[index] subarrayWithRange:NSMakeRange(position[index], count - position[index])]];
 	CEGeometryIndexNode *n1 = [self loadObjects:a1 :endNodes];

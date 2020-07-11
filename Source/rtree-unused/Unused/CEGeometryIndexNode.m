@@ -1,4 +1,4 @@
-// CEGeometryIndexNode.m : implementation of the CEGeometryIndexNode and CEGeometryIndexGroupNode classes
+// CEGeometryIndexNode.m: implementation of the CEGeometryIndexNode and CEGeometryIndexGroupNode classes
 
 #import "CEGeometryIndexNode.h"
 #import "CEGeometryIndex.h"
@@ -111,7 +111,7 @@ static BOOL _objectIntersectingRect(NSRect rect1, NSRect rect2)
 
 - (CEGeometryIndexNode *)chooseSubNode:(NSRect)rect;
 {
-	return NSContainsRect(_nodeBounds, rect) ? self : NULL;
+	return NSContainsRect(_nodeBounds, rect) ? self: NULL;
 }
 
 - (int)height;

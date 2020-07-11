@@ -5,7 +5,7 @@
 #	define M_PI 3.1415926535
 #endif
 #ifndef ABS
-#	define ABS(a) ((a) > 0 ? (a) : -(a))
+#	define ABS(a) ((a) > 0 ? (a): -(a))
 #endif
 
 #define EP .0000000001

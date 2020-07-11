@@ -35,7 +35,7 @@ public extension RTree {
 
 		return withUnsafeBytes(of: &node.branch) { rawPtr in
 			let branch = rawPtr.baseAddress!.assumingMemoryBound(to: RTreeBranch.self)
-			let count = Int(node.level > 0 ? NODECARD : LEAFCARD)
+			let count = Int(node.level > 0 ? NODECARD: LEAFCARD)
 			return (0 ..< count).reduce(CGRect.zero) {
 				$0.union(branch[$1].rect.bounds)
 			}
@@ -118,7 +118,7 @@ public extension RTree {
 			search(RTreeRect(rect), searchMethod: options) {
 				guard let rect = $1?.pointee, let ptrElement = $0 else { return 0 }
 				let id = ptrElement.assumingMemoryBound(to: Element.self).pointee
-				return escapingBody(id, rect.bounds) ? 1 : 0
+				return escapingBody(id, rect.bounds) ? 1: 0
 			}
 		}
 	}
@@ -231,7 +231,7 @@ public extension RTreeNode {
 		var root = self
 		return withUnsafeBytes(of: &root.branch) { rawPtr in
 			let branch = rawPtr.baseAddress!.assumingMemoryBound(to: RTreeBranch.self)
-			let count = Int(level > 0 ? NODECARD : LEAFCARD)
+			let count = Int(level > 0 ? NODECARD: LEAFCARD)
 			return (0 ..< count).reduce(CGRect.zero) {
 				$0.union(branch[$1].rect.bounds)
 			}

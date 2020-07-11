@@ -301,7 +301,7 @@ NSInteger RTreeOverlap(RTreeRect *aRect, RTreeRect *bRect)
 	return (aRect->boundary[2] <= bRect->boundary[0] ||
 		bRect->boundary[2] <= aRect->boundary[0]  ||
 		aRect->boundary[3] <= bRect->boundary[1] ||
-		bRect->boundary[3] <= aRect->boundary[1]) ? false : true;
+		bRect->boundary[3] <= aRect->boundary[1]) ? false: true;
 }
 
 NSInteger RTreeOverlap_Old(RTreeRect *R, RTreeRect *S)

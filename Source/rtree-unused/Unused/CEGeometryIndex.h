@@ -1,4 +1,4 @@
-// CEGeometryIndex.h : interface of the CEGeometryIndex class
+// CEGeometryIndex.h: interface of the CEGeometryIndex class
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -9,7 +9,7 @@
 
 ////////////////////////////////////////////////////////////
 // CEGeometryIndex
-@interface CEGeometryIndex : NSObject
+@interface CEGeometryIndex: NSObject
 {
 	NSArray *_contentArray;
 	NSMutableSet *_endNodes;

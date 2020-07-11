@@ -1,4 +1,4 @@
-// CEGeometryContextualIndex.m : implementation of the CEGeometryContextualIndex class
+// CEGeometryContextualIndex.m: implementation of the CEGeometryContextualIndex class
 
 #import "CEGeometryContextualIndex.h"
 #import "CEGeometryIndexNode.h"

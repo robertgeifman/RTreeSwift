@@ -1,4 +1,4 @@
-// CEGeometryIndex.h : interface of the CEGeometryIndex class
+// CEGeometryIndex.h: interface of the CEGeometryIndex class
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -21,7 +21,7 @@ typedef BOOL (*_searchFunction)(NSRect, NSRect);
 
 ////////////////////////////////////////////////////////////
 // CEGeometryIndexNode
-@interface CEGeometryIndexNode : NSObject
+@interface CEGeometryIndexNode: NSObject
 {
 __weak 
 	CEGeometryIndex *_index;
@@ -47,5 +47,5 @@ __weak
 
 ////////////////////////////////////////////////////////////
 // CEGeometryIndexGroupNode
-@interface CEGeometryIndexGroupNode : CEGeometryIndexNode
+@interface CEGeometryIndexGroupNode: CEGeometryIndexNode
 @end

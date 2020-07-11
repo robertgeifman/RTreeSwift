@@ -1,4 +1,4 @@
-// CERTreeIndex.m : implementation of the CERTreeIndex class BulkLoading category
+// CERTreeIndex.m: implementation of the CERTreeIndex class BulkLoading category
 #import "CERTreeIndex.h"
 #import "RTreeIndexImpl.h"
 #import "RTreeCard.h"
@@ -21,7 +21,7 @@
 	r.boundary[1] = NSMinY(rect);
 	r.boundary[2] = NSMaxX(rect);
 	r.boundary[3] = NSMaxY(rect);
-	int index = [_emptySlots count] ? [_emptySlots firstIndex] : [_objects count];
+	int index = [_emptySlots count] ? [_emptySlots firstIndex]: [_objects count];
 	if(!RTreeInsertRect(&r, (void *)index, (Node **)&_indexRootNode, 0))
 		return NSNotFound;
 

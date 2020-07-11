@@ -6,5 +6,5 @@ extern NSInteger LEAFCARD;
 #define MinNodeFill (NODECARD / 2)
 #define MinLeafFill (LEAFCARD / 2)
 
-#define MAXKIDS(n) ((n)->level > 0 ? NODECARD : LEAFCARD)
-#define MINFILL(n) ((n)->level > 0 ? MinNodeFill : MinLeafFill)
+#define MAXKIDS(n) ((n)->level > 0 ? NODECARD: LEAFCARD)
+#define MINFILL(n) ((n)->level > 0 ? MinNodeFill: MinLeafFill)

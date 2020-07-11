@@ -227,7 +227,7 @@ void RTreeSplitNodeQuadratic(RTreeNode *n, RTreeBranch *b, RTreeNode * *nn) {
 	/* find partition */
 	p = &Partitions[0];
 	/* Note: can't use MINFILL(n) below since n was cleared by GetBranches() */
-	RTreeMethodZero(p, level > 0 ? MinNodeFill : MinLeafFill);
+	RTreeMethodZero(p, level > 0 ? MinNodeFill: MinLeafFill);
 
 	/*
 	 * put branches from buffer into 2 nodes

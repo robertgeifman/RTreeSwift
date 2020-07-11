@@ -1,4 +1,4 @@
-// CEObservingRTreeIndex.m : implementation of the CEObservingRTreeIndex class
+// CEObservingRTreeIndex.m: implementation of the CEObservingRTreeIndex class
 
 #import "CEObservingRTreeIndex.h"
 #import "CEFoundation-Private.h"
@@ -164,7 +164,7 @@
 - (id)initWithCoder:(NSCoder *)coder;
 {
 	if(!([[self superclass] conformsToProtocol:@protocol(NSCoding)] ?
-		[(id <NSCoding>)super initWithCoder:coder] : [super init]))
+		[(id <NSCoding>)super initWithCoder:coder]: [super init]))
 		return NULL;
 	_observedKeyPath = [[coder decodeObjectForKey:@"observedKeyPath"] retain];
 	return self;

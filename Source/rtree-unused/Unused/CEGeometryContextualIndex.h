@@ -1,4 +1,4 @@
-// CEGeometryContextualIndex.h : interface of the CEGeometryContextualIndex class
+// CEGeometryContextualIndex.h: interface of the CEGeometryContextualIndex class
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -10,7 +10,7 @@
 
 ////////////////////////////////////////////////////////////
 // CEGeometryContextualIndex
-@interface CEGeometryContextualIndex : CEGeometryIndex
+@interface CEGeometryContextualIndex: CEGeometryIndex
 {
 	void *_observationInfo;
 	NSString *_observedKey;

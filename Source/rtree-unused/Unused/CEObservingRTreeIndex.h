@@ -1,4 +1,4 @@
-// CEObservingRTreeIndex.h : interface of the CEObservingRTreeIndex class
+// CEObservingRTreeIndex.h: interface of the CEObservingRTreeIndex class
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -10,7 +10,7 @@
 
 ////////////////////////////////////////////////////////////
 // CEObservingRTreeIndex
-@interface CEObservingRTreeIndex : CERTreeIndex <NSCoding>
+@interface CEObservingRTreeIndex: CERTreeIndex <NSCoding>
 {
 	void *_observationInfo;
 	NSString *_observedKeyPath;

@@ -9,8 +9,8 @@
 #define BIG_NUM (FLT_MAX / 4.0)
 
 #define Undefined(x) ((x)->boundary[0] > (x)->boundary[NUMDIMS])
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a): (b))
+#define MAX(a, b) ((a) > (b) ? (a): (b))
 
 /// Initialize a rectangle to have all 0 coordinates.
 void RTreeInitRect(struct RTreeRect *R) {
