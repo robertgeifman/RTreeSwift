@@ -1,0 +1,109 @@
+included:
+  - Source
+  - Interoperability
+
+#  - ./Package.swift
+
+# paths to ignore during linting. Takes precedence over `included`.
+excluded:
+  - Sourcery
+  - GYB
+  - Generated
+  - External
+  - External (Unused)
+  - Pods
+  - Misc
+  - Excluded
+  - Source/UI/Storyboards.swift
+
+# rule identifiers to exclude from running
+disabled_rules:
+  - trailing_whitespace
+  - file_length
+  - type_body_length
+  - function_body_length
+
+  # idiomatic
+  - fallthrough
+  - force_cast
+  - type_name
+  - private_over_fileprivate
+
+  # style
+  - closure_parameter_position
+  - identifier_name
+  - vertical_parameter_alignment
+  - statement_position
+  - number_separator
+
+  # metrics
+  - large_tuple
+  - function_parameter_count
+  - redundant_string_enum_value
+
+  - line_length
+
+  - nesting
+  - cyclomatic_complexity
+
+  # lint
+  - notification_center_detachment
+  - unused_closure_parameter
+  - weak_delegate
+  - legacy_hashing
+  - type_contents_order
+  - private_outlet
+  - trailing_comma
+  - implicit_getter
+  
+shorthand_operator: warning
+
+# some rules are only opt-in
+opt_in_rules:
+  - discarded_notification_center_observer
+  # - explicit_top_level_acl
+  - superfluous_disable_command
+  - redundant_set_access_control
+# swift 5
+  - reduce_boolean
+  - nsobject_prefer_isequal
+  - reduce_into
+  # - file_types_order
+  # - type_contents_order
+  - nslocalizedstring_require_bundle
+  - unused_capture_list
+
+  # performance
+  - empty_count
+  - first_where
+  - sorted_first_last
+  - contains_over_first_not_nil
+
+  # idiomatic
+  - fatal_error_message
+
+  # style
+  # - attributes
+  # interesting
+  - operator_usage_whitespace
+
+  # lint
+  - overridden_super_call
+  - closure_spacing
+  - explicit_init
+  - implicit_return
+  - implicitly_unwrapped_optional
+  - nimble_operator
+  # - object_literal
+  - prohibited_super_call
+  - redundant_nil_coalescing
+  # - private_outlet # questionable but seems reasonable
+  # - sorted_imports # not sure
+
+# - vertical_parameter_alignment_on_call # NO WAY
+#  - conditional_returns_on_newline # NOPE
+#  - switch_case_on_newline  # i don't like
+#  - file_header # not enforcing headers
+#  - closure_end_indentation # i don't like this one
+
+
