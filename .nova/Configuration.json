@@ -1,0 +1,6 @@
+{
+  "editor.default_syntax" : "swift",
+  "index.enabled" : true,
+  "index.symbolicate" : true,
+  "workspace.color" : 14
+}

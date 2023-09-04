@@ -1,0 +1,21 @@
+{
+  "actions" : {
+    "build" : {
+      "postActions" : [
+        {
+          "script" : "swift build",
+          "type" : "runScript"
+        }
+      ]
+    }
+  },
+  "extension" : {
+    "identifier" : "panic.Icarus",
+    "name" : "Icarus"
+  },
+  "extensionTemplate" : "lldbDebug",
+  "extensionValues" : {
+
+  },
+  "openLogOnRun" : "start"
+}
